@@ -868,9 +868,19 @@ bool BuildGraphLoader::checkConfigCompatibility()
     if (!m_parameters.overrideBuildGraphData()) {
         if (!m_parameters.overriddenValues().empty()
                 && m_parameters.overriddenValues() != restoredProject->overriddenValues) {
+            // build the list of overridden values for diagnostic purposes
+            QString overridden;
+            for(QVariantMap::const_iterator iter = restoredProject->overriddenValues.begin();
+                                            iter != restoredProject->overriddenValues.end();
+                                            ++iter) {
+                    overridden += QString::fromStdString("%1: %2\n").arg(iter.key(), iter.value().toString());
+            }
+
             throw ErrorInfo(Tr::tr("Property values set on the command line differ from the "
-                                   "ones used for the previous build. Use the 'resolve' command if "
-                                   "you really want to rebuild with the new properties."));
+                                   "ones used for the previous build. Cached properties are: \n%1"
+                                   "Use the 'resolve' command if "
+                                   "you really want to rebuild with the new properties.")
+                                   .arg(overridden));
             }
         m_parameters.setOverriddenValues(restoredProject->overriddenValues);
         if (m_parameters.topLevelProfile() != restoredProject->profile()) {
